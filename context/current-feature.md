@@ -1,18 +1,24 @@
-# Current Feature
-
-<!-- Feature name and short description -->
+# Current Feature: Email Verification Toggle
 
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals and requirements -->
+- Add environment variable `SKIP_EMAIL_VERIFICATION` to control email verification behavior
+- When `SKIP_EMAIL_VERIFICATION=true`, skip sending verification emails and auto-verify users on registration
+- When disabled or not set, email verification works as currently implemented
+- Update registration flow to check the toggle
+- Update sign-in flow to skip verification check when toggle is enabled
+- Document the environment variable in `.env.example`
 
 ## Notes
 
-<!-- Any extra notes -->
+- Currently no domain is linked to Resend, so only the Resend test email can receive verification emails
+- This toggle allows local development and testing without a verified domain
+- Environment variable approach keeps the feature simple and follows existing patterns in the codebase
+- Default behavior (no env var set) should require verification to maintain security in production
 
 ## History
 
@@ -30,3 +36,4 @@
 - **Auth Setup Phase 1** - NextAuth v5 with GitHub OAuth, split auth config for edge compatibility, Prisma adapter with JWT strategy, /dashboard route protection via proxy, Session type with user.id (Completed)
 - **Auth Setup Phase 2** - Credentials provider with email/password, bcrypt validation, /api/auth/register endpoint with validation (Completed)
 - **Auth Setup Phase 3** - Custom sign-in and register pages, reusable UserAvatar component with image/initials fallback, sidebar user dropdown with profile link and sign out, Sonner toast notifications, dashboard uses authenticated session (Completed)
+- **Email Verification** - Resend SDK integration, verification tokens on registration, verification emails, /api/auth/verify endpoint, /verify-email page, sign-in blocking for unverified users, resend functionality, edge case handling (Completed)
