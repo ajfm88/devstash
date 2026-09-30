@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   Sheet,
   SheetContent,
@@ -31,8 +32,10 @@ import {
   File,
 } from "lucide-react";
 import { formatFileSize } from "@/lib/r2";
+import { formatLongDate } from "@/lib/utils/date";
 import { getItemTypeIcon } from "@/lib/constants/item-types";
 import { useItemDrawer } from "./item-drawer-provider";
+import { useClipboard } from "@/hooks/use-clipboard";
 import { toast } from "sonner";
 import { updateItem, deleteItem } from "@/actions/items";
 import DeleteItemDialog from "./delete-item-dialog";
@@ -79,6 +82,7 @@ const FILE_TYPES = ["file", "image"];
 export default function ItemDrawer() {
   const router = useRouter();
   const { isOpen, item, isLoading, closeDrawer, setItem } = useItemDrawer();
+  const { copy } = useClipboard();
 
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
@@ -112,16 +116,10 @@ export default function ItemDrawer() {
     }
   }, [isOpen]);
 
-  const handleCopy = async () => {
+  const handleCopy = () => {
     if (!item) return;
-
     const textToCopy = item.content || item.url || item.title;
-    try {
-      await navigator.clipboard.writeText(textToCopy);
-      toast.success("Copied to clipboard");
-    } catch {
-      toast.error("Failed to copy");
-    }
+    copy(textToCopy);
   };
 
   const handleEdit = () => {
@@ -476,21 +474,13 @@ export default function ItemDrawer() {
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Created</span>
                         <span className="text-foreground">
-                          {new Date(item.createdAt).toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
+                          {formatLongDate(item.createdAt)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Updated</span>
                         <span className="text-foreground">
-                          {new Date(item.updatedAt).toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
+                          {formatLongDate(item.updatedAt)}
                         </span>
                       </div>
                     </div>
@@ -554,12 +544,13 @@ export default function ItemDrawer() {
                         {isImage ? "Image" : "File"}
                       </p>
                       {isImage ? (
-                        <div className="rounded-lg border border-border overflow-hidden bg-muted/30">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                        <div className="rounded-lg border border-border overflow-hidden bg-muted/30 relative h-80">
+                          <Image
                             src={item.fileUrl}
                             alt={item.fileName || item.title}
-                            className="max-w-full h-auto max-h-80 object-contain mx-auto"
+                            fill
+                            sizes="(max-width: 768px) 100vw, 500px"
+                            className="object-contain"
                           />
                         </div>
                       ) : (
@@ -650,21 +641,13 @@ export default function ItemDrawer() {
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Created</span>
                         <span className="text-foreground">
-                          {new Date(item.createdAt).toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
+                          {formatLongDate(item.createdAt)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Updated</span>
                         <span className="text-foreground">
-                          {new Date(item.updatedAt).toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
+                          {formatLongDate(item.updatedAt)}
                         </span>
                       </div>
                     </div>

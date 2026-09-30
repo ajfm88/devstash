@@ -9,12 +9,13 @@ import {
   VALID_ITEM_TYPES,
   type ItemDetail
 } from '@/lib/db/items';
+import { parseZodErrors, safeUrlSchema } from '@/lib/validation';
 
 const updateItemSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
   description: z.string().trim().nullable().optional().transform((val) => val || null),
   content: z.string().nullable().optional().transform((val) => val || null),
-  url: z.string().url('Invalid URL').nullable().optional().transform((val) => val || null),
+  url: safeUrlSchema,
   language: z.string().trim().nullable().optional().transform((val) => val || null),
   tags: z.array(z.string().trim()).transform((tags) =>
     tags.filter((tag) => tag.length > 0)
@@ -43,15 +44,7 @@ export async function updateItem(
   const parsed = updateItemSchema.safeParse(input);
 
   if (!parsed.success) {
-    const fieldErrors: Record<string, string[]> = {};
-    for (const issue of parsed.error.issues) {
-      const field = issue.path[0]?.toString() || 'unknown';
-      if (!fieldErrors[field]) {
-        fieldErrors[field] = [];
-      }
-      fieldErrors[field].push(issue.message);
-    }
-    return { success: false, error: 'Validation failed', fieldErrors };
+    return { success: false, error: 'Validation failed', fieldErrors: parseZodErrors(parsed.error) };
   }
 
   const updated = await updateItemQuery(session.user.id, itemId, parsed.data);
@@ -96,12 +89,12 @@ const createItemSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
   description: z.string().trim().nullable().optional().transform((val) => val || null),
   content: z.string().nullable().optional().transform((val) => val || null),
-  url: z.string().url('Invalid URL').nullable().optional().transform((val) => val || null),
+  url: safeUrlSchema,
   language: z.string().trim().nullable().optional().transform((val) => val || null),
   tags: z.array(z.string().trim()).transform((tags) =>
     tags.filter((tag) => tag.length > 0)
   ),
-  fileUrl: z.string().url().nullable().optional().transform((val) => val || null),
+  fileUrl: safeUrlSchema,
   fileName: z.string().nullable().optional().transform((val) => val || null),
   fileSize: z.number().int().positive().nullable().optional().transform((val) => val || null),
 });
@@ -120,15 +113,7 @@ export async function createItem(
   const parsed = createItemSchema.safeParse(input);
 
   if (!parsed.success) {
-    const fieldErrors: Record<string, string[]> = {};
-    for (const issue of parsed.error.issues) {
-      const field = issue.path[0]?.toString() || 'unknown';
-      if (!fieldErrors[field]) {
-        fieldErrors[field] = [];
-      }
-      fieldErrors[field].push(issue.message);
-    }
-    return { success: false, error: 'Validation failed', fieldErrors };
+    return { success: false, error: 'Validation failed', fieldErrors: parseZodErrors(parsed.error) };
   }
 
   // Validate URL is required for link type
