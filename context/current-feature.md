@@ -1,18 +1,27 @@
-# Current Feature
+# Current Feature: Favorite Toggle
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Add feature goals here -->
+- Wire up favorite toggle on items (ItemDrawer) and collections (CollectionCard dropdown, CollectionActions button)
+- Add toggleItemFavorite and toggleCollectionFavorite db queries and server actions
+- Toast feedback, router.refresh() after toggle, unit tests
 
 ## Notes
 
-<!-- Add notes and constraints here -->
+- Prisma schema already has `isFavorite` on Item and Collection - no migration needed
+- UI buttons/icons already exist but have no onClick handlers
+- Star filled yellow (#eab308) when active (existing styling in place)
+- Follow existing patterns: Zod validation, ownership checks, { success, data, error } return
 
 ## History
+
+- **Favorites Page** - Star icon in TopBar linking to /favorites, getFavoriteItems and getFavoriteCollections db queries, FavoriteItemRow and FavoriteCollectionRow components with compact VS Code/terminal-style rows, /favorites page with separate items/collections sections, click item opens ItemDrawer, click collection navigates to detail, empty state (Completed)
+
+- **Editor Preferences Settings** - Editor preferences on settings page with font size, tab size, word wrap, minimap, and theme dropdowns/toggles, editorPreferences JSON column on User model with migration, EditorPreferencesProvider context, updateEditorPreferences server action, Monaco editor applies user preferences, auto-save with toast, 19 unit tests (Completed)
 
 - **Settings Page** - Settings page at /settings with Change Password and Delete Account, Settings link in sidebar dropdowns, getUserWithSettings utility, simplified ProfileInfo (Completed)
 
