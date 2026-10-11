@@ -1,4 +1,4 @@
-# Current Feature: Favorite Toggle
+# Current Feature: Pinned Items
 
 ## Status
 
@@ -6,18 +6,26 @@ In Progress
 
 ## Goals
 
-- Wire up favorite toggle on items (ItemDrawer) and collections (CollectionCard dropdown, CollectionActions button)
-- Add toggleItemFavorite and toggleCollectionFavorite db queries and server actions
-- Toast feedback, router.refresh() after toggle, unit tests
+- Create toggleItemPin server action with ownership check and Zod validation
+- Make Pin button in ItemDrawer clickable (exists but has no onClick)
+- Optimistic UI updates for instant feedback on pin/unpin
+- Toast notification on success/error
+- Pinned items sort to top of item listings
+- Follow the existing Favorite Button pattern
+- Items only (not collections)
+- Pin icon on ItemCard remains as static indicator
 
 ## Notes
 
-- Prisma schema already has `isFavorite` on Item and Collection - no migration needed
-- UI buttons/icons already exist but have no onClick handlers
-- Star filled yellow (#eab308) when active (existing styling in place)
-- Follow existing patterns: Zod validation, ownership checks, { success, data, error } return
+- Follow the same pattern used for toggleItemFavorite
+- The Pin button already exists in the ItemDrawer action bar but is not wired up
+- Dashboard already has a pinned items section that should reflect pinned state
+- getItemsByType query already sorts pinned items first
 
 ## History
+
+- **Favorite Toggle** - toggleItemFavorite and toggleCollectionFavorite db queries and server actions with ownership checks and Zod validation, wired up ItemDrawer favorite button with optimistic state update, CollectionCard dropdown Favorite/Unfavorite menu item, CollectionActions star button on collection detail page, toast feedback, router.refresh(), 10 new unit tests (Completed)
+
 
 - **Favorites Page** - Star icon in TopBar linking to /favorites, getFavoriteItems and getFavoriteCollections db queries, FavoriteItemRow and FavoriteCollectionRow components with compact VS Code/terminal-style rows, /favorites page with separate items/collections sections, click item opens ItemDrawer, click collection navigates to detail, empty state (Completed)
 
@@ -66,3 +74,4 @@ In Progress
 - **Collection Management Actions** - Edit/delete/favorite buttons on /collections/[id] page, 3-dot dropdown on collection cards, EditCollectionDialog and DeleteCollectionDialog modals, updateCollection/deleteCollection server actions and db queries, items NOT deleted when collection deleted, 17 new unit tests (Completed)
 - **Global Search / Command Palette** - Cmd+K/Ctrl+K opens command palette, search across items and collections, grouped results with type icons and item counts, keyboard navigation, TopBar search trigger, SearchProvider context with data pre-fetching, stricter substring matching, 7 new unit tests (Completed)
 - **Pagination** - Reusable Pagination component with numbered pages and prev/next buttons, pagination on /items/[type], /collections, and /collections/[id] pages, server-side pagination with skip/take, pagination constants (ITEMS_PER_PAGE=21, COLLECTIONS_PER_PAGE=21), dashboard limits (DASHBOARD_COLLECTIONS_LIMIT=6, DASHBOARD_RECENT_ITEMS_LIMIT=10) (Completed)
+- **Favorites Sorting** - Client-side sorting on /favorites page, FavoritesItemList component with sort by Name/Date/Type, FavoritesCollectionList component with sort by Name/Date, shadcn Select dropdowns with compact monospace styling, useMemo for sorted lists, default sort by newest (Completed)
