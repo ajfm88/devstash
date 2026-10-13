@@ -1,4 +1,4 @@
-# Current Feature: Homepage Mockup
+# Current Feature: Homepage
 
 ## Status
 
@@ -6,24 +6,26 @@ In Progress
 
 ## Goals
 
-- Create a static marketing homepage in `prototypes/homepage/` with `index.html`, `styles.css`, `script.js`
-- Hero section with "chaos to order" concept: floating icons (left), pulsing arrow (center), dashboard preview (right)
-- Animated chaos icons that drift, bounce off walls, and repel from mouse cursor
-- Fixed top nav with logo, Features/Pricing links, Sign In/Get Started buttons
-- Features section with 6 cards using item type accent colors
-- AI section with Pro Feature badge, capabilities checklist, and code editor mockup
-- Pricing section with Free vs Pro cards, yearly toggle ($72/yr), Pro highlighted as "Most Popular"
-- CTA section and footer with logo, link columns, dynamic copyright year
-- Scroll fade-in animations and navbar opacity on scroll
-- Responsive: stack hero vertically on mobile, single column grids, arrow rotates 90°
+- Convert the static HTML prototype (`prototypes/homepage/`) into the actual Next.js homepage at `src/app/page.tsx`
+- Faithfully reproduce the design, layout, and animations using Tailwind CSS and shadcn/ui
+- Build 11 components: page shell, Navbar, HeroSection, ChaosAnimation, DashboardPreview, FeaturesSection, AISection, PricingSection, CTASection, Footer, ScrollFadeIn
+- Server components by default; client components only for Navbar (scroll effect, mobile menu), HeroSection, ChaosAnimation, PricingSection (billing toggle), ScrollFadeIn (IntersectionObserver)
+- All navigation links wired up: Sign In -> /sign-in, Get Started -> /register, Features/Pricing -> anchor scroll
+- Responsive layout: 3-col -> 2-col -> 1-col grids, mobile hamburger menu
+- Dark theme matching prototype with blue gradient accents
+- Smooth scroll via `scroll-smooth` on html/body
 
 ## Notes
 
-- Dark theme with accent colors: Snippet (#3b82f6), Prompt (#f59e0b), Command (#06b6d4), Note (#22c55e), File (#64748b), Image (#ec4899), URL (#6366f1)
-- This is a standalone static prototype, NOT part of the Next.js app
-- Chaos icons use requestAnimationFrame for animation
-- Arrow has CSS pulse animation
-- Full spec at context/features/homepage-mockup-spec.md
+- Use Lucide React icons instead of inline SVGs
+- Use `next/link` for internal routes, plain `<a>` for anchor links
+- Chaos animation: port requestAnimationFrame loop into useEffect with ref-based state, clean up on unmount
+- ScrollFadeIn: IntersectionObserver with threshold 0.1, CSS transition (opacity 0->1, translateY 24px->0)
+- Pricing toggle: useState for isYearly, swap $8/month to $6/month (billed $72/yr)
+- Navbar scroll effect: track window.scrollY in useEffect, toggle background opacity/border
+- Use shadcn Button component (variant="default" for primary, variant="outline" for ghost)
+- Feature card accent colors via inline styles or Tailwind arbitrary values
+- Reference files: prototypes/homepage/index.html, styles.css, script.js
 
 ## History
 
@@ -79,3 +81,4 @@ In Progress
 - **Pagination** - Reusable Pagination component with numbered pages and prev/next buttons, pagination on /items/[type], /collections, and /collections/[id] pages, server-side pagination with skip/take, pagination constants (ITEMS_PER_PAGE=21, COLLECTIONS_PER_PAGE=21), dashboard limits (DASHBOARD_COLLECTIONS_LIMIT=6, DASHBOARD_RECENT_ITEMS_LIMIT=10) (Completed)
 - **Favorites Sorting** - Client-side sorting on /favorites page, FavoritesItemList component with sort by Name/Date/Type, FavoritesCollectionList component with sort by Name/Date, shadcn Select dropdowns with compact monospace styling, useMemo for sorted lists, default sort by newest (Completed)
 - **Pinned Items** - toggleItemPin db query and server action with ownership check and Zod validation, wired up ItemDrawer pin button with optimistic state update, blue highlight when pinned, toast feedback, router.refresh(), 5 new unit tests (Completed)
+- **Homepage Mockup** - Static marketing homepage prototype in prototypes/homepage/ with dark theme, hero section featuring chaos-to-order animation (8 floating icons with requestAnimationFrame, mouse repulsion, pulsing arrow, dashboard preview with topbar and content cards), fixed navbar with scroll opacity, 6 feature cards with accent colors, AI section with Pro badge and code editor mockup with syntax highlighting and AI-generated tags demo, pricing section with Free/Pro cards and monthly/yearly toggle, CTA section, footer with dynamic year, scroll fade-in animations via IntersectionObserver, fully responsive mobile layout (Completed)

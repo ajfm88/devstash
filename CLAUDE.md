@@ -24,8 +24,8 @@ Read the following to get the full context of the project:
 
 When using the Neon MCP tools:
 
-- **Project:** `devstash` (ID: `rough-wave-01978094`)
-- **Default Branch:** `development` (ID: `br-snowy-wave-ahmwgmj3`)
+- **Project:** `devstash`
+- **Default Branch:** `development`
 - **Database:** `neondb`
 
 **IMPORTANT:** Always use the development branch for all database operations. Never run queries against the production branch (`br-flat-butterfly-ah9tlloi`) unless explicitly instructed to do so.
