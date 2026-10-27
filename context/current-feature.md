@@ -1,4 +1,4 @@
-# Current Feature: AI Prompt Optimizer
+# Current Feature
 
 ## Status
 
@@ -6,22 +6,19 @@ In Progress
 
 ## Goals
 
-- Add `optimizePrompt` server action in `src/actions/ai.ts` with auth/Pro gating, Zod validation, rate limiting (reuse existing patterns from `explainCode`/`generateDescription`)
-- Add `showOptimize`, `isPro`, `title`, and `onAcceptOptimized` props to MarkdownEditor for prompt types in read-only mode (mirrors CodeEditor's `showExplain` pattern)
-- Add "Optimize" button (Sparkles icon) in the MarkdownEditor header via `extraButtons` prop on EditorHeader, with Crown icon + tooltip for free users
-- After optimizing, show Original/Optimized tabs in the MarkdownEditor (like Code/Explain tabs in CodeEditor)
-- Show an "Use This" button on the Optimized tab that calls `onAcceptOptimized` to update the item's content via the existing `updateItem` server action
-- Wire up in ItemDrawer: pass `showOptimize`, `isPro`, `title`, and `onAcceptOptimized` handler to MarkdownEditor for prompt type items in read-only view mode
-- The `onAcceptOptimized` handler should save the optimized prompt to the item, show a toast, and refresh the page
-- Write unit tests for the `optimizePrompt` server action
+1. Add sidebar active link highlighting using `usePathname()` in both desktop and mobile sidebars (High)
+2. Add GitHub OAuth button to register page matching sign-in page pattern (High)
+3. Add active state to sidebar collection links for `/collections` and `/collections/[id]` (Medium)
+4. Add "AI Prompt Optimizer" to homepage pricing Pro features list (Medium)
+5. Fix copy button / date text overlap on narrow item cards (Low)
+6. Add GitHub OAuth hint to register page footer (Low)
 
 ## Notes
 
-- Follow the exact same pattern as "Explain" in CodeEditor (`showExplain` / `extraButtons` / tabs / Crown tooltip)
-- The MarkdownEditor needs `extraButtons` added to its EditorHeader usage (it doesn't have it currently)
-- Only show Optimize for `prompt` type items (not notes), in read-only mode (item drawer view mode)
-- AI prompt: "You are a prompt engineering expert. Analyze the following prompt and return an improved version. Make it clearer, more specific, and more effective. Preserve the original intent. Return a JSON object with an `optimizedPrompt` key."
-- Truncate content to 2000 chars (existing MAX_CONTENT_LENGTH)
+- Sidebar files (`sidebar.tsx`, `mobile-sidebar.tsx`) don't import `usePathname` at all - needs to be added
+- Register form (`register-form.tsx`) is missing the entire GitHub OAuth section that exists in `sign-in-form.tsx`
+- PricingSection.tsx `PRO_FEATURES` array is missing "AI Prompt Optimizer"
+- ItemCard copy button uses `absolute bottom-2 right-2` which can overlap content on narrow viewports
 
 ## History
 
@@ -83,3 +80,5 @@ In Progress
 - **AI Auto-Tagging** - OpenAI client utility (gpt-5-nano via Responses API), generateAutoTags server action with auth/Pro gating/Zod validation/rate limiting (20 req/hr), SuggestTagsButton component with accept/reject badge controls, integrated in NewItemDialog and ItemDrawer edit mode (Pro-only), isPro prop threaded through DashboardLayout/TopBar/ItemsPageHeader/ItemDrawerProvider, content truncation to 2000 chars, handles both {tags:[...]} and [...] response formats, normalizes to lowercase with dedup, 13 unit tests (Completed)
 - **AI Description Generator** - generateDescription server action with auth/Pro gating/Zod validation/rate limiting, GenerateDescriptionButton component with "Describe" label and Sparkles icon, integrated next to Description label in NewItemDialog and ItemDrawer edit mode (Pro-only), uses title/content/URL/language/type context with 2000 char truncation, handles {description:"..."} and plain string AI response formats, 12 new unit tests (Completed)
 - **AI Explain Code** - explainCode server action with auth/Pro gating/Zod validation/rate limiting, Explain button (Sparkles icon) in code editor header for snippet/command types in item drawer read mode, Code/Explain tab interface after generating, markdown-rendered explanation in same container, Crown icon + tooltip for free users (Pro gating UI), Loader2 spinner during generation, error toasts, TooltipProvider in dashboard layout, extraButtons prop on EditorHeader, 12 new unit tests (Completed)
+- **AI Prompt Optimizer** - optimizePrompt server action with auth/Pro gating/Zod validation/rate limiting, Optimize button (Sparkles icon) in MarkdownEditor header for prompt types in item drawer read mode, Original/Optimized tab interface after generating, "Use This" button (Check icon, emerald green) to accept and save optimized prompt via updateItem, Crown icon + tooltip for free users (Pro gating UI), extraButtons prop added to MarkdownEditor's EditorHeader, 12 new unit tests (Completed)
+- **Drawer & Editor Font Sizes** - Improved readability in item drawer and editors: description text and URL links bumped from text-sm (14px) to text-base (16px), markdown editor preview removed prose-sm for 16px default with better line-height, markdown textarea bumped to text-base, editor toolbar buttons (Copy, Explain, Optimize, language label, tabs) bumped from text-xs (12px) to text-sm (14px) across editor-header.tsx, code-editor.tsx, and markdown-editor.tsx (Completed)
