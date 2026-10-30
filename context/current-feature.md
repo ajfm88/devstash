@@ -14,11 +14,6 @@ Not Started
 
 ## History
 
-- **Vercel Analytics** - Installed @vercel/analytics package, added Analytics component to root layout for page view tracking across all pages (Completed)
-
-
-- **Language Selector Dropdown** - Replaced free-text language input with Select dropdown (31 languages) in NewItemDialog and ItemDrawer edit mode, moved language selector above content editor for immediate syntax highlighting as user types, LANGUAGES constant in editor.ts (Completed)
-
 - **Initial Setup** - Next.js 16, Tailwind CSS v4, TypeScript configured (Completed)
 - **Dashboard UI Phase 1** - ShadCN UI initialization, dashboard route at /dashboard, main layout with dark mode, top bar with search and buttons, sidebar and main placeholders (Completed)
 - **Dashboard UI Phase 2** - Collapsible sidebar with item type navigation, favorite and recent collections, user avatar area, mobile drawer, and responsive behavior (Completed)
@@ -80,3 +75,6 @@ Not Started
 - **UI Polish Fixes** - Sidebar active link highlighting via usePathname() in desktop and mobile sidebars (type links, collection links, "View all collections"), GitHub OAuth button on register page with divider and space-y-4 spacing, "AI Prompt Optimizer" added to homepage pricing Pro features, copy button overlap fix with pb-10 on item cards (Completed)
 - **Action Utils Refactor** - Extracted shared action helpers into src/lib/action-utils.ts: getAuthedSession() replacing 12+ auth check blocks, requirePro() replacing 4 Pro gating blocks, checkAiRateLimit() replacing 4 rate limit blocks, shared ActionResult<T> interface; added validateId() to validation.ts replacing 5 throwaway Zod ID schemas; refactored all 5 action files (items, collections, ai, settings, search), net reduction of ~168 lines, 198 tests passing (Completed)
 - **Component Refactor** - Extracted 9 shared components/utilities across 16 files: ConfirmDeleteDialog, DialogFormFooter, ProAiButton, FormError, GitHubAuthSection, SortableSection (shared components), SidebarNav, UserMenu (layout components), pricing constants and startCheckout utility; fixed PRO_FEATURES divergence bug; net ~450 lines reduced, 198 tests passing (Completed)
+- **Language Selector Dropdown** - Replaced free-text language input with Select dropdown (31 languages) in NewItemDialog and ItemDrawer edit mode, moved language selector above content editor for immediate syntax highlighting as user types, LANGUAGES constant in editor.ts (Completed)
+- **Import/Export** - Export JSON (free) and ZIP with files (Pro) via /api/export route with archiver, importData server action with Zod validation/Prisma transaction/duplicate detection/free tier limits/file-image filtering, DataSettings component on settings page with Export JSON/Export ZIP (Pro)/Import buttons, ImportDialog with file drop zone and preview summary, getUserExportData DB query, previewImport and importData actions, file references preserved for Pro users on import, 17 new unit tests (215 total) (Completed)
+- **Vercel Analytics** - Installed @vercel/analytics package, added Analytics component to root layout for page view tracking across all pages (Completed)
