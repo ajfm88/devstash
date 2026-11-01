@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { ownedDownloadKey, r2PublicUrl } from '@/lib/file-urls';
 
 export async function GET(
   _request: Request,
@@ -13,7 +14,7 @@ export async function GET(
     }
 
     const { path } = await params;
-    const publicUrl = process.env.R2_PUBLIC_URL;
+    const publicUrl = r2PublicUrl();
 
     if (!publicUrl) {
       return NextResponse.json(
@@ -22,16 +23,14 @@ export async function GET(
       );
     }
 
-    // Reconstruct the full path
-    const filePath = path.join('/');
-
-    // Verify the file belongs to the current user (path starts with userId)
-    if (!filePath.startsWith(session.user.id + '/')) {
+    const key = ownedDownloadKey(path, session.user.id);
+    if (!key) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    const fileUrl = `${publicUrl}/${key}`;
+
     // Fetch from R2
-    const fileUrl = `${publicUrl}/${filePath}`;
     const response = await fetch(fileUrl);
 
     if (!response.ok) {
@@ -44,7 +43,7 @@ export async function GET(
       response.headers.get('content-type') || 'application/octet-stream';
 
     // Extract filename from path
-    const fileName = filePath.split('/').pop() || 'download';
+    const fileName = key.split('/').pop() || 'download';
     // Remove timestamp prefix if present (format: timestamp-filename)
     const cleanFileName = fileName.replace(/^\d+-/, '');
 

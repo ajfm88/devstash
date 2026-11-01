@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ownedFileKey, isOwnedFileUrl } from './file-urls';
+import { ownedFileKey, isOwnedFileUrl, ownedDownloadKey, r2PublicUrl } from './file-urls';
 
 const PUBLIC = 'https://pub-abc.r2.dev';
 const ME = 'user_me';
@@ -32,6 +32,13 @@ describe('ownedFileKey', () => {
     expect(ownedFileKey(`https://evil.example/${ME}/a.pdf`, ME)).toBeNull();
   });
 
+  it('rejects encoded dot segments and backslashes that the URL parser would collapse', () => {
+    expect(ownedFileKey(`${PUBLIC}/${ME}/%2e%2e/user_victim/a.pdf`, ME)).toBeNull();
+    expect(ownedFileKey(`${PUBLIC}/${ME}/%2E%2E/user_victim/a.pdf`, ME)).toBeNull();
+    expect(ownedFileKey(`${PUBLIC}/${ME}/a%2Fuser_victim%2Fa.pdf`, ME)).toBeNull();
+    expect(ownedFileKey(`${PUBLIC}/${ME}/a\\..\\victim.pdf`, ME)).toBeNull();
+  });
+
   it('rejects dot segments, empty segments, queries, and fragments', () => {
     expect(ownedFileKey(`${PUBLIC}/${ME}/../user_victim/a.pdf`, ME)).toBeNull();
     expect(ownedFileKey(`${PUBLIC}/${ME}//a.pdf`, ME)).toBeNull();
@@ -51,5 +58,43 @@ describe('ownedFileKey', () => {
   it('isOwnedFileUrl mirrors the key check', () => {
     expect(isOwnedFileUrl(`${PUBLIC}/${ME}/a.pdf`, ME)).toBe(true);
     expect(isOwnedFileUrl(`${PUBLIC}/other/a.pdf`, ME)).toBe(false);
+  });
+});
+
+describe('ownedDownloadKey', () => {
+  it('joins the caller namespace and file segments', () => {
+    expect(ownedDownloadKey([ME, '1700000000-notes.pdf'], ME)).toBe(`${ME}/1700000000-notes.pdf`);
+    expect(ownedDownloadKey([ME, 'sub', 'a.pdf'], ME)).toBe(`${ME}/sub/a.pdf`);
+  });
+
+  it('rejects another user namespace and bare namespaces', () => {
+    expect(ownedDownloadKey(['user_victim', 'a.pdf'], ME)).toBeNull();
+    expect(ownedDownloadKey([ME], ME)).toBeNull();
+    expect(ownedDownloadKey([], ME)).toBeNull();
+  });
+
+  it('rejects dot segments in plain and encoded forms', () => {
+    expect(ownedDownloadKey([ME, '..', 'user_victim', 'a.pdf'], ME)).toBeNull();
+    expect(ownedDownloadKey([ME, '%2e%2e', 'user_victim', 'a.pdf'], ME)).toBeNull();
+    expect(ownedDownloadKey([ME, '%252e%252e', 'user_victim', 'a.pdf'], ME)).toBeNull();
+    expect(ownedDownloadKey([ME, '.', 'a.pdf'], ME)).toBeNull();
+  });
+
+  it('rejects separators smuggled inside a segment and malformed encoding', () => {
+    expect(ownedDownloadKey([ME, 'x%2Fuser_victim%2Fa.pdf'], ME)).toBeNull();
+    expect(ownedDownloadKey([ME, 'x%5Cy.pdf'], ME)).toBeNull();
+    expect(ownedDownloadKey([ME, '%E0%A4%A'], ME)).toBeNull();
+  });
+});
+
+describe('r2PublicUrl', () => {
+  it('strips trailing slashes so upload and ownership agree on the prefix', () => {
+    vi.stubEnv('R2_PUBLIC_URL', 'https://pub-abc.r2.dev///');
+    expect(r2PublicUrl()).toBe('https://pub-abc.r2.dev');
+  });
+
+  it('returns null when unset', () => {
+    vi.stubEnv('R2_PUBLIC_URL', '');
+    expect(r2PublicUrl()).toBeNull();
   });
 });
