@@ -8,12 +8,22 @@ import {
   toggleItemFavorite as toggleItemFavoriteQuery,
   toggleItemPin as toggleItemPinQuery,
   VALID_ITEM_TYPES,
+  isFileType,
+  UnknownCollectionError,
   type ItemDetail
 } from '@/lib/db/items';
 import { parseZodErrors, safeUrlSchema, validateId } from '@/lib/validation';
 import { isOwnedFileUrl } from '@/lib/file-urls';
 import { canCreateItem } from '@/lib/usage';
 import { getAuthedSession, type ActionResult } from '@/lib/action-utils';
+
+function collectionOrGenericError(error: unknown, fallback: string): ActionResult<never> {
+  if (error instanceof UnknownCollectionError) {
+    return { success: false, error: error.message, fieldErrors: { collectionIds: [error.message] } };
+  }
+  console.error(fallback, error);
+  return { success: false, error: fallback };
+}
 
 const updateItemSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
@@ -42,13 +52,17 @@ export async function updateItem(
     return { success: false, error: 'Validation failed', fieldErrors: parseZodErrors(parsed.error) };
   }
 
-  const updated = await updateItemQuery(session.user.id, itemId, parsed.data);
+  try {
+    const updated = await updateItemQuery(session.user.id, itemId, parsed.data);
 
-  if (!updated) {
-    return { success: false, error: 'Item not found or access denied' };
+    if (!updated) {
+      return { success: false, error: 'Item not found or access denied' };
+    }
+
+    return { success: true, data: updated };
+  } catch (error) {
+    return collectionOrGenericError(error, 'Failed to update item');
   }
-
-  return { success: true, data: updated };
 }
 
 export async function deleteItem(
@@ -137,7 +151,8 @@ export async function createItem(
 
   // Pro type check: file/image require Pro
   const isPro = session.user.isPro ?? false;
-  if ((parsed.data.typeName === 'file' || parsed.data.typeName === 'image') && !isPro) {
+  const fileBacked = isFileType(parsed.data.typeName);
+  if (fileBacked && !isPro) {
     return { success: false, error: 'File and image uploads require a Pro subscription' };
   }
 
@@ -153,8 +168,7 @@ export async function createItem(
   }
 
   // A file reference is only valid when it points at this user's own upload namespace.
-  const isFileType = parsed.data.typeName === 'file' || parsed.data.typeName === 'image';
-  if (isFileType) {
+  if (fileBacked) {
     if (parsed.data.fileUrl && !isOwnedFileUrl(parsed.data.fileUrl, session.user.id)) {
       return {
         success: false,
@@ -168,11 +182,15 @@ export async function createItem(
     parsed.data.fileSize = null;
   }
 
-  const created = await createItemQuery(session.user.id, parsed.data);
+  try {
+    const created = await createItemQuery(session.user.id, parsed.data);
 
-  if (!created) {
-    return { success: false, error: 'Failed to create item' };
+    if (!created) {
+      return { success: false, error: 'Failed to create item' };
+    }
+
+    return { success: true, data: created };
+  } catch (error) {
+    return collectionOrGenericError(error, 'Failed to create item');
   }
-
-  return { success: true, data: created };
 }
