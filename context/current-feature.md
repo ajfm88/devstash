@@ -1,4 +1,4 @@
-# Current Feature: Public Collections Phase 1
+# Current Feature: Public Collections Phase 2 (Owner Controls)
 
 ## Status
 
@@ -6,18 +6,23 @@ In Progress
 
 ## Goals
 
-- One Prisma migration adds visibility, slug, shortId, and publishedAt to Collection, handle to User, position to ItemCollection with a (collectionId, position) index, the CollectionSlugHistory table, and a partial unique index on system item types, with backfill SQL in the migration file
-- Backfills produce unique per-user slugs, globally unique 8-character short ids, unique handles, and contiguous 0-based positions ordered by addedAt then itemId, proven by the unique constraints added after the backfill and by invariant queries on the Docker restore
-- slugs.ts and short-id.ts helpers with tests, including a test that fails when a top-level app route is missing from the reserved handle list
-- createCollection assigns slug and short id; createItem, updateItem, importData, and the seed write positions that append at the end; getItemsByCollection orders by position
-- No visible feature, no new environment variables, `prisma migrate diff` clean, `npm run verify` passes
+- Visibility control on `/collections/[id]`: a select with Private, Unlisted, and Public and a one-line description each; `setCollectionVisibility` db query in one transaction sets `publishedAt` the first time visibility leaves PRIVATE and ensures the owner has a handle (`ensureUserHandle` in `src/lib/db/users.ts` using `handleBase(email)` from `slugs.ts` plus `uniqueSlug`, one retry on a unique violation); server action with a Zod enum returning `{ visibility, publishedAt, handle }`
+- Copy link: when the collection is not private, show the readable URL `{origin}/{handle}/{slug}` and a Copy link button that copies `{origin}/s/{shortId}` through `useClipboard`; origin from `window.location` after mount; `getCollectionById` returns `slug`, `shortId`, `visibility`, `publishedAt`, and the owner's handle
+- Ordering: the collection page lists all items in one column in position order across all types (replacing the grid, image gallery, and file list sections), each row like the favorites rows with move up and move down buttons, first item on page 1 and last item on the last page disabled at the edges; `moveCollectionItem` db query in one transaction whose first statement is `collection.updateMany` with `where: { id, userId }` touching `updatedAt` (ownership check and row lock), then reads the join rows in display order, swaps with the neighbor, and writes `0..n-1` back to rows whose position changed; edge moves are no-ops that succeed; server action with `direction` limited to up and down
+- Slug editing: `updateCollection` accepts an optional `slug`; when changed, in the same transaction delete any history row for `(userId, newSlug)`, upsert history `(userId, oldSlug) -> collectionId`, then update; unchanged slug writes nothing; `createCollection` deletes a matching history row after insert; `collectionSlugSchema` and `handleSchema` in `validation.ts` trim, lowercase, check `SLUG_PATTERN` and the reserved list; the action maps `P2002` to a `slug` field error; edit dialog gains a Slug field with inline error; collection cards pass the slug through
+- Handle editing: `updateUserHandle` and `handle` on `getUserWithSettings`; `updateHandle` server action in `settings.ts` with `P2002` mapped to "That handle is taken"; `HandleSettings` card on the settings page with the current handle, Save, and the line that readable links change while short links keep working
+- Item drawer: `getItemById` and `updateItem` select `visibility` on the item's collections; `ItemDetail.collections[]` gains `visibility`; read-mode badges show a globe icon for public and a link icon for unlisted with a title
+- Tests: `handleBase`, both validation schemas, `setCollectionVisibility`, `moveCollectionItem` (lock first and on the tx client, swap, edge no-op, gap and tie repair, not found), `updateCollection` slug history, `createCollection` history claim, `ensureUserHandle`, `updateUserHandle`, and the new actions; `npm run verify` passes
 
 ## Notes
 
-- Spec: `context/features/public-collections-phase-1-spec.md`; product spec in the vault at `Projects/Live/DevStash/SPEC.md`
-- Branch: `feature/public-collections`, long-lived across all five phases, one commit per phase, no push until proven locally (decided 2026-09-24)
-- Per-user tags are out of scope and become their own feature after public collections
-- Production migration runs only through the production build after the feature merges
+- Spec: `context/features/public-collections-phase-2-spec.md`; product spec R040 to R046 in the vault
+- Stay on `feature/public-collections` (long-lived, one commit per phase, no push); do not create a new branch
+- No schema change and no migration in this phase
+- Out of scope: public routes, redirects, raw view, and `revalidatePath` (phase 3); quick add (phase 4); public assets (phase 5); drag reorder; handle history; locking inside `createItem` and `updateItem` (ties are repaired by the first reorder); per-user tags
+- Copied links return 404 until phase 3 ships the routes
+- Touching `updatedAt` on reorder also moves the collection to the top of recents
+- Browser check needs a dev server Brad starts: change visibility and confirm `publishedAt` and the handle in the database, copy the link, move an item across the page boundary, change a slug and see the history row, change the handle and see the readable URL update
 
 ## History
 
@@ -88,3 +93,4 @@ In Progress
 - **Audit Hardening** - Dependency update (Next 16.3.6, React 19.3, Prisma 7.10), verify gate with pre-push hook and CI, and fixes from the 2026-09-24 code audit: login rate limit inside authorize with typed error codes, file references restricted to the caller's upload namespace, collection ownership on item writes with a transactional membership diff, removal of the signIn callback that deleted GitHub links, guarded seed and cleanup scripts, Stripe cancel on account delete, same-origin post-login redirects, download path hardening, rate limiter fail-closed for credential limits, upload error handling, lazy Stripe and Resend clients, signed-in users redirected off the auth pages (Completed)
 - **CI Database & Dependabot** - Postgres 18 service container in the CI workflow, `prisma migrate deploy` against an empty database and a `migrate diff` drift check before verify, monthly grouped Dependabot updates for npm and GitHub Actions (Completed)
 - **Route Handler Tests** - Vitest coverage for the seven auth route handlers (register, verify, resend-verification, forgot-password, reset-password, change-password, delete-account) and the upload, download, export, and items/[id] handlers, plus direct unit tests for validation.ts, tokens.ts, and action-utils.ts; locks rate limit before body parse, enumeration-safe responses, token expiry and single use, OAuth-only guards, Pro gating, R2 namespace and traversal rejection, and Stripe cancel-before-delete; Stripe routes and the NextAuth catch-all left out; 115 new tests (383 total) (Completed)
+- **Public Collections Phase 1** - One migration adding visibility, slug, shortId, and publishedAt to Collection, handle to User, position to ItemCollection with a (collectionId, position) index, the CollectionSlugHistory table, and a partial unique index on system item types, with the backfills in the migration file (per-row random short ids, one slugify rule shared by SQL and TypeScript, per-user slug and global handle dedupe walking oldest first, positions by addedAt then itemId) so the unique constraints prove them; slugs.ts and short-id.ts helpers with a test that fails when an app route is missing from RESERVED_HANDLES; createCollection assigns slug and short id with one retry on a unique violation; createItem, updateItem, importData, and the seed append join rows at the end of each collection; getItemsByCollection reads through the join in position order; verified on the Docker production restore and an empty database with the CI drift check clean; 49 new tests (432 total) (Completed)
