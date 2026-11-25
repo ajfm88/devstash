@@ -8,6 +8,8 @@ A collection groups items in a fixed order, like the commands for one lesson or 
 
 Deleting a collection keeps its items; they stay in your stash.
 
+> **Tip:** A collection holds the item itself, not a copy, so editing an item changes it in every collection it belongs to.
+
 ## Publish a collection
 
 Set the visibility on the collection's page to Unlisted or Public (see [Sharing and links](/docs/sharing) for what each means). A shared collection gets two links:
@@ -15,7 +17,7 @@ Set the visibility on the collection's page to Unlisted or Public (see [Sharing 
 - A readable URL: `devstash.io/{handle}/{slug}`
 - A short link: `devstash.io/s/{id}`, which redirects to the readable one
 
-The public page shows every item in order, each with a Copy button and an anchor link (`#b1`, `#b2`, and so on). **Copy as markdown** copies the whole collection, and adding `.md` to the URL serves it as one markdown file:
+The public page shows every item in the collection, including items that are private on their own, in order, each with a Copy button and an anchor link (`#b1`, `#b2`, and so on). **Copy as markdown** copies the whole collection, and adding `.md` to the URL serves it as one markdown file:
 
 ```bash
 curl -s https://devstash.io/yourhandle/react-patterns.md
@@ -26,7 +28,3 @@ curl -s https://devstash.io/yourhandle/react-patterns.md
 Your handle is the first part of every collection URL. It is created from your email the first time you share, and you can change it in Settings.
 
 The slug comes from the collection's name. Change it in the collection's Edit dialog. Old URLs redirect to the new one, so links you have already posted keep working.
-
-## Limits
-
-You can have up to 100 collections.
